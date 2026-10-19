@@ -6,3 +6,4 @@ Rules live in `.claude/rules/` and are imported below. Keep them there, not in t
 @.claude/rules/architecture.md
 @.claude/rules/angular.md
 @.claude/rules/ui.md
+@.claude/rules/testing.md
