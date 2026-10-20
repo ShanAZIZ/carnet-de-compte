@@ -16,6 +16,7 @@ kotlin {
 }
 dependencies {
     implementation(libs.exposed.core)
+    implementation(libs.exposed.java.time)
     implementation(libs.exposed.jdbc)
     implementation(libs.flyway.core)
     implementation(libs.flyway.postgresql)
@@ -23,7 +24,10 @@ dependencies {
     implementation(ktorLibs.server.config.yaml)
     implementation(ktorLibs.server.contentNegotiation)
     implementation(ktorLibs.server.core)
+    implementation(ktorLibs.server.di)
     implementation(ktorLibs.server.netty)
+    implementation(ktorLibs.server.statusPages)
+    implementation(libs.kotlin.csv)
     implementation(libs.logback.classic)
     implementation(libs.postgresql)
 

@@ -5,7 +5,9 @@ ktor:
     modules:
       - site.cdc.config.DatabaseKt.configureDatabase
       - site.cdc.config.SerializationKt.configureSerialization
+      - site.cdc.config.ErrorHandlingKt.configureErrorHandling
       - site.cdc.RoutingKt.configureRouting
+      - site.cdc.operation.OperationModuleKt.operationModule
 
 db:
   url: "$DB_URL:jdbc:postgresql://localhost:5432/cdc"
