@@ -10,7 +10,7 @@ import java.time.LocalDate
 
 @Serializable
 data class ColumnMapping(
-    @SerialName("csv_column") val csvColumn: String,
+    @SerialName("csv_index") val csvIndex: Int,
     @SerialName("app_column") val appColumn: String,
 )
 
@@ -49,10 +49,9 @@ fun parseOperations(content: ByteArray, mapping: List<ColumnMapping>): List<NewO
     require(rows.size > 1) { "CSV sans ligne de données" }
 
     val header = rows.first()
-    val columnIndex = mapping.associate { (csvColumn, appColumn) ->
-        val index = header.indexOf(csvColumn)
-        require(index >= 0) { "Colonne « $csvColumn » absente de l'en-tête : $header" }
-        appColumn to index
+    val columnIndex = mapping.associate { (csvIndex, appColumn) ->
+        require(csvIndex in header.indices) { "Colonne n°$csvIndex absente de l'en-tête : $header" }
+        appColumn to csvIndex
     }
 
     return rows.drop(1).mapIndexed { index, row ->

@@ -7,14 +7,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 private val fullMapping = listOf(
-    ColumnMapping("Date de l'opération", "operationDate"),
-    ColumnMapping("Date de valeur", "debitDate"),
-    ColumnMapping("Libellé", "label"),
-    ColumnMapping("Catégorie", "suggestedLabel"),
-    ColumnMapping("Montant", "amount"),
-    ColumnMapping("Compte", "accountId"),
-    ColumnMapping("Intitulé du compte", "accountLabel"),
-    ColumnMapping("Solde", "balance"),
+    ColumnMapping(2, "operationDate"),
+    ColumnMapping(3, "debitDate"),
+    ColumnMapping(4, "label"),
+    ColumnMapping(5, "suggestedLabel"),
+    ColumnMapping(6, "amount"),
+    ColumnMapping(0, "accountId"),
+    ColumnMapping(1, "accountLabel"),
+    ColumnMapping(7, "balance"),
 )
 
 private const val HEADER =
@@ -25,7 +25,7 @@ private fun csv(vararg rows: String) = (listOf(HEADER) + rows).joinToString("\n"
 class OperationCsvTest {
 
     @Test
-    fun `maps columns by header name whatever their order`() {
+    fun `maps columns by index whatever their order`() {
         val rows = parseOperations(
             csv("FR7612345;Compte courant;2026-01-05;2026-01-06;CAFE;Restaurant;-3,50;908,90"),
             fullMapping,
@@ -44,6 +44,16 @@ class OperationCsvTest {
             ),
             rows.single(),
         )
+    }
+
+    @Test
+    fun `tells apart two columns sharing the same header`() {
+        val content = "Compte;Intitulé du compte;Date;Date;Libellé;Catégorie;Montant;Solde\n" +
+            "FR7612345;Compte courant;2026-01-05;2026-01-06;CAFE;Restaurant;-3,50;908,90"
+
+        val rows = parseOperations(content.toByteArray(), fullMapping)
+
+        assertEquals(LocalDate.of(2026, 1, 6), rows.single().debitDate)
     }
 
     @Test
@@ -80,7 +90,7 @@ class OperationCsvTest {
     @Test
     fun `rejects an unknown app column`() {
         assertFailsWith<IllegalArgumentException> {
-            parseOperations(csv(), fullMapping + ColumnMapping("Solde", "soldeFinal"))
+            parseOperations(csv(), fullMapping + ColumnMapping(7, "soldeFinal"))
         }
     }
 
@@ -96,7 +106,7 @@ class OperationCsvTest {
         assertFailsWith<IllegalArgumentException> {
             parseOperations(
                 csv("FR7612345;Compte courant;2026-01-05;2026-01-06;CAFE;Restaurant;-3,50;908,90"),
-                fullMapping.map { if (it.appColumn == "label") it.copy(csvColumn = "Intitulé") else it },
+                fullMapping.map { if (it.appColumn == "label") it.copy(csvIndex = 8) else it },
             )
         }
     }

@@ -33,14 +33,14 @@ import kotlin.test.assertTrue
 private const val HEADER = "Compte;Intitulé du compte;Date;Valeur;Libellé;Catégorie;Montant;Solde"
 
 private val MAPPING = """
-    [{"csv_column":"Date","app_column":"operationDate"},
-     {"csv_column":"Valeur","app_column":"debitDate"},
-     {"csv_column":"Libellé","app_column":"label"},
-     {"csv_column":"Catégorie","app_column":"suggestedLabel"},
-     {"csv_column":"Montant","app_column":"amount"},
-     {"csv_column":"Compte","app_column":"accountId"},
-     {"csv_column":"Intitulé du compte","app_column":"accountLabel"},
-     {"csv_column":"Solde","app_column":"balance"}]
+    [{"csv_index":2,"app_column":"operationDate"},
+     {"csv_index":3,"app_column":"debitDate"},
+     {"csv_index":4,"app_column":"label"},
+     {"csv_index":5,"app_column":"suggestedLabel"},
+     {"csv_index":6,"app_column":"amount"},
+     {"csv_index":0,"app_column":"accountId"},
+     {"csv_index":1,"app_column":"accountLabel"},
+     {"csv_index":7,"app_column":"balance"}]
 """.trimIndent()
 
 private fun statement(account: String, vararg rows: String) =
