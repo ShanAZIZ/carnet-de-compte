@@ -86,7 +86,7 @@ class OperationRoutesTest {
         configureTestApp()
 
         val response = client.import(
-            statement("FR001", "05/01/2026;06/01/2026;CAFE;Restaurant;-3,50;908,90", "06/01/2026;07/01/2026;LOYER;Logement;-700,00;208,90"),
+            statement("FR001", "2026-01-05;2026-01-06;CAFE;Restaurant;-3,50;908,90", "2026-01-06;2026-01-07;LOYER;Logement;-700,00;208,90"),
         )
 
         assertEquals(HttpStatusCode.Created, response.status)
@@ -98,7 +98,7 @@ class OperationRoutesTest {
     fun `re-import replaces instead of duplicating`() = testApplication {
         configureTestApp()
 
-        val csv = statement("FR002", "05/01/2026;06/01/2026;CAFE;Restaurant;-3,50;908,90")
+        val csv = statement("FR002", "2026-01-05;2026-01-06;CAFE;Restaurant;-3,50;908,90")
         client.import(csv)
         val response = client.import(csv)
 
@@ -110,9 +110,9 @@ class OperationRoutesTest {
     fun `import of one account leaves the other untouched`() = testApplication {
         configureTestApp()
 
-        client.import(statement("FR003", "05/01/2026;06/01/2026;CAFE;Restaurant;-3,50;908,90"))
-        client.import(statement("FR004", "05/01/2026;06/01/2026;ESSENCE;Transport;-60,00;140,00"))
-        val response = client.import(statement("FR003", "07/01/2026;08/01/2026;CINEMA;Loisirs;-12,00;896,90"))
+        client.import(statement("FR003", "2026-01-05;2026-01-06;CAFE;Restaurant;-3,50;908,90"))
+        client.import(statement("FR004", "2026-01-05;2026-01-06;ESSENCE;Transport;-60,00;140,00"))
+        val response = client.import(statement("FR003", "2026-01-07;2026-01-08;CINEMA;Loisirs;-12,00;896,90"))
 
         assertEquals("""{"deleted":1,"inserted":1}""", response.bodyAsText())
         assertEquals(listOf("CINEMA"), labelsOf("FR003"))
@@ -124,7 +124,7 @@ class OperationRoutesTest {
         configureTestApp()
 
         client.import(
-            statement("FR007", "05/01/2026;06/01/2026;CAFE;Restaurant;-3,50;908,90", "06/01/2026;07/01/2026;LOYER;;-700,00;208,90"),
+            statement("FR007", "2026-01-05;2026-01-06;CAFE;Restaurant;-3,50;908,90", "2026-01-06;2026-01-07;LOYER;;-700,00;208,90"),
         )
 
         val response = client.get("/operations") { bearerAuth(tokenFor("alice")) }
@@ -153,7 +153,7 @@ class OperationRoutesTest {
     fun `rejects a request without the mapping part`() = testApplication {
         configureTestApp()
 
-        val response = client.import(statement("FR005", "05/01/2026;06/01/2026;CAFE;Restaurant;-3,50;908,90"), mapping = null)
+        val response = client.import(statement("FR005", "2026-01-05;2026-01-06;CAFE;Restaurant;-3,50;908,90"), mapping = null)
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
     }
@@ -162,7 +162,7 @@ class OperationRoutesTest {
     fun `rejects a csv whose amount is unparseable`() = testApplication {
         configureTestApp()
 
-        val response = client.import(statement("FR006", "05/01/2026;06/01/2026;CAFE;Restaurant;trois euros;908,90"))
+        val response = client.import(statement("FR006", "2026-01-05;2026-01-06;CAFE;Restaurant;trois euros;908,90"))
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
         assertTrue(response.bodyAsText().contains("amount"), response.bodyAsText())
@@ -208,7 +208,7 @@ class OperationRoutesTest {
     fun `lists only the operations of the caller`() = testApplication {
         configureTestApp()
 
-        client.import(statement("FR008", "05/01/2026;06/01/2026;CAFE;Restaurant;-3,50;908,90"), user = "alice")
+        client.import(statement("FR008", "2026-01-05;2026-01-06;CAFE;Restaurant;-3,50;908,90"), user = "alice")
 
         assertTrue(client.listOperations(user = "bob").none { it.accountId == "FR008" })
     }
@@ -217,8 +217,8 @@ class OperationRoutesTest {
     fun `import leaves another user's account with the same id untouched`() = testApplication {
         configureTestApp()
 
-        client.import(statement("FR009", "05/01/2026;06/01/2026;CAFE;Restaurant;-3,50;908,90"), user = "alice")
-        val response = client.import(statement("FR009", "05/01/2026;06/01/2026;ESSENCE;Transport;-60,00;140,00"), user = "bob")
+        client.import(statement("FR009", "2026-01-05;2026-01-06;CAFE;Restaurant;-3,50;908,90"), user = "alice")
+        val response = client.import(statement("FR009", "2026-01-05;2026-01-06;ESSENCE;Transport;-60,00;140,00"), user = "bob")
 
         assertEquals("""{"deleted":0,"inserted":1}""", response.bodyAsText())
         assertEquals(listOf("CAFE"), client.listOperations(user = "alice").filter { it.accountId == "FR009" }.map { it.label })

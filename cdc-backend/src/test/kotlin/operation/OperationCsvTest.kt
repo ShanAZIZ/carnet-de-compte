@@ -27,7 +27,7 @@ class OperationCsvTest {
     @Test
     fun `maps columns by header name whatever their order`() {
         val rows = parseOperations(
-            csv("FR7612345;Compte courant;05/01/2026;06/01/2026;CAFE;Restaurant;-3,50;908,90"),
+            csv("FR7612345;Compte courant;2026-01-05;2026-01-06;CAFE;Restaurant;-3,50;908,90"),
             fullMapping,
         )
 
@@ -49,7 +49,7 @@ class OperationCsvTest {
     @Test
     fun `keeps a quoted label containing the delimiter`() {
         val rows = parseOperations(
-            csv("""FR7612345;Compte courant;05/01/2026;06/01/2026;"CARTE 05/01 AUCHAN;PARIS";Courses;-42,10;870,30"""),
+            csv("""FR7612345;Compte courant;2026-01-05;2026-01-06;"CARTE 05/01 AUCHAN;PARIS";Courses;-42,10;870,30"""),
             fullMapping,
         )
 
@@ -59,7 +59,7 @@ class OperationCsvTest {
     @Test
     fun `parses a french amount with a non breaking thousands separator`() {
         val rows = parseOperations(
-            csv("FR7612345;Compte courant;05/01/2026;06/01/2026;LOYER;Logement;-1\u00A0234,56;-363,66"),
+            csv("FR7612345;Compte courant;2026-01-05;2026-01-06;LOYER;Logement;-1\u00A0234,56;-363,66"),
             fullMapping,
         )
 
@@ -70,7 +70,7 @@ class OperationCsvTest {
     @Test
     fun `leaves an empty suggested label null`() {
         val rows = parseOperations(
-            csv("FR7612345;Compte courant;05/01/2026;06/01/2026;CAFE;;-3,50;908,90"),
+            csv("FR7612345;Compte courant;2026-01-05;2026-01-06;CAFE;;-3,50;908,90"),
             fullMapping,
         )
 
@@ -95,7 +95,7 @@ class OperationCsvTest {
     fun `rejects a column absent from the header`() {
         assertFailsWith<IllegalArgumentException> {
             parseOperations(
-                csv("FR7612345;Compte courant;05/01/2026;06/01/2026;CAFE;Restaurant;-3,50;908,90"),
+                csv("FR7612345;Compte courant;2026-01-05;2026-01-06;CAFE;Restaurant;-3,50;908,90"),
                 fullMapping.map { if (it.appColumn == "label") it.copy(csvColumn = "Intitulé") else it },
             )
         }
@@ -105,7 +105,7 @@ class OperationCsvTest {
     fun `rejects an unparseable date`() {
         assertFailsWith<IllegalArgumentException> {
             parseOperations(
-                csv("FR7612345;Compte courant;2026-01-05;06/01/2026;CAFE;Restaurant;-3,50;908,90"),
+                csv("FR7612345;Compte courant;05/01/2026;2026-01-06;CAFE;Restaurant;-3,50;908,90"),
                 fullMapping,
             )
         }

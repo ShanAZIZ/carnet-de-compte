@@ -7,7 +7,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @Serializable
 data class ColumnMapping(
@@ -15,10 +14,8 @@ data class ColumnMapping(
     @SerialName("app_column") val appColumn: String,
 )
 
-// ponytail: formats d'export figés ici (`;`, dd/MM/yyyy, virgule décimale, UTF-8) — une banque qui
+// ponytail: formats d'export figés ici (`;`, date ISO, virgule décimale, UTF-8) — une banque qui
 // exporte autrement demandera de les faire remonter dans le body mapping.
-private const val DATE_PATTERN = "dd/MM/yyyy"
-private val dateFormat = DateTimeFormatter.ofPattern(DATE_PATTERN)
 private val csv = csvReader {
     dialect = CsvDialect(delimiter = ';')
     skipEmptyLine = true
@@ -86,8 +83,8 @@ private class OperationLineReader(
         optionalText(appColumn) ?: reject(appColumn, "est vide")
 
     private fun date(appColumn: String) = text(appColumn).let { value ->
-        runCatching { LocalDate.parse(value, dateFormat) }
-            .getOrElse { reject(appColumn, "« $value » n'est pas une date $DATE_PATTERN") }
+        runCatching { LocalDate.parse(value) }
+            .getOrElse { reject(appColumn, "« $value » n'est pas une date ISO (yyyy-MM-dd)") }
     }
 
     private fun money(appColumn: String) = text(appColumn).let { value ->
