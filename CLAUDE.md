@@ -12,6 +12,7 @@ Always work from the directory of the project at hand: `npm`/`ng` in `cdc-fronte
 - No new dependency for what the stdlib, the platform, or an already-installed package covers.
 - No speculative abstraction: no interface with a single implementation, no layer "for later".
 - One change = the shortest diff that works, placed where all callers route through.
+- No comment that restates the code. A comment carries only a *why* the code cannot: a constraint, a trade-off, a deliberate shortcut and its ceiling. Delete the rest.
 - Lint and tests of the touched project pass before the work is declared done.
 - Commit messages in English, imperative mood, one intent per commit.
 
