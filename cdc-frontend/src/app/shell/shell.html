@@ -44,25 +44,25 @@
     >
       <p class="text-xl font-bold">Mes Finances</p>
 
-      @if (auth.user(); as user) {
-        <ul class="menu w-full gap-1">
-          @for (section of sections; track $index) {
-            @if (section.title) {
-              <li class="menu-title">{{ section.title }}</li>
-            }
-            @for (link of section.links; track link.path) {
-              <li>
-                <a
-                  [routerLink]="link.path"
-                  routerLinkActive="menu-active"
-                  (click)="toggleDrawer(false)"
-                  >{{ link.label }}</a
-                >
-              </li>
-            }
+      <ul class="menu w-full gap-1">
+        @for (section of sections; track $index) {
+          @if (section.title) {
+            <li class="menu-title">{{ section.title }}</li>
           }
-        </ul>
+          @for (link of section.links; track link.path) {
+            <li>
+              <a
+                [routerLink]="link.path"
+                routerLinkActive="menu-active"
+                (click)="toggleDrawer(false)"
+                >{{ link.label }}</a
+              >
+            </li>
+          }
+        }
+      </ul>
 
+      @if (auth.user(); as user) {
         <div class="mt-auto flex flex-col gap-2">
           <p class="text-base-content/70 truncate text-sm">{{ user.email }}</p>
           <button type="button" class="btn btn-sm" (click)="signOut()">Se déconnecter</button>
