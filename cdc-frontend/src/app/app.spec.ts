@@ -1,7 +1,9 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { App } from './app';
 import { routes } from './app.routes';
+import { Auth } from './core/auth';
 
 describe('App', () => {
   let fixture: ComponentFixture<App>;
@@ -102,7 +104,16 @@ describe('App', () => {
 async function createApp() {
   TestBed.configureTestingModule({
     imports: [App],
-    providers: [provideRouter(routes)],
+    providers: [
+      provideRouter(routes),
+      {
+        provide: Auth,
+        useValue: {
+          user: signal({ email: 'alice@example.com' }),
+          isSignedIn: () => Promise.resolve(true),
+        },
+      },
+    ],
   });
 
   const fixture = TestBed.createComponent(App);

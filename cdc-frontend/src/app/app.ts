@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Auth } from './core/auth';
 
 const NAV_SECTIONS = [
   {
@@ -26,10 +27,17 @@ const NAV_SECTIONS = [
   host: { '(keydown.escape)': 'toggleDrawer(false)' },
 })
 export class App {
+  protected readonly auth = inject(Auth);
+  readonly #router = inject(Router);
   protected readonly sections = NAV_SECTIONS;
   protected readonly isDrawerOpen = signal(false);
 
   protected toggleDrawer(open: boolean): void {
     this.isDrawerOpen.set(open);
+  }
+
+  protected async signOut(): Promise<void> {
+    await this.auth.signOut();
+    await this.#router.navigateByUrl('/connexion');
   }
 }
