@@ -5,10 +5,14 @@ ktor:
     modules:
       - site.cdc.config.DatabaseKt.configureDatabase
       - site.cdc.config.SerializationKt.configureSerialization
+      - site.cdc.config.CorsKt.configureCors
       - site.cdc.config.ErrorHandlingKt.configureErrorHandling
       - site.cdc.config.AuthenticationKt.configureAuthentication
       - site.cdc.RoutingKt.configureRouting
       - site.cdc.operation.OperationModuleKt.operationModule
+
+cors:
+  allowedOrigins: "$CORS_ALLOWED_ORIGINS:http://localhost:4200,http://127.0.0.1:4200"
 
 db:
   url: "$DB_URL:jdbc:postgresql://localhost:5432/cdc"
