@@ -17,6 +17,8 @@ kotlin {
 dependencies {
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
+    implementation(libs.flyway.core)
+    implementation(libs.flyway.postgresql)
     implementation(ktorLibs.serialization.kotlinx.json)
     implementation(ktorLibs.server.config.yaml)
     implementation(ktorLibs.server.contentNegotiation)
@@ -27,4 +29,5 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)
+    testImplementation(libs.testcontainers.postgresql)
 }

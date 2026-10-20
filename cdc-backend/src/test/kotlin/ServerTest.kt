@@ -18,13 +18,13 @@ class ServerTest {
 
     @Test
     fun `test root endpoint`() = testApplication {
-        configure()
+        configureTestApp()
         assertEquals(HttpStatusCode.OK, client.get("/").status)
     }
 
     @Test
     fun `responds json for serializable payloads`() = testApplication {
-        configure()
+        configureTestApp()
         routing { get("/payload") { call.respond(Payload(true)) } }
 
         val response = client.get("/payload")

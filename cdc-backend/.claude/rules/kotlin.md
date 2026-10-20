@@ -27,6 +27,17 @@
 
 ## Tests
 
-- `kotlin.test` + `testApplication` from `ktor-server-test-host`. Do NOT add JUnit 5 assertions, MockK, or Testcontainers unless the need is real.
+- `kotlin.test` + `testApplication` from `ktor-server-test-host`. Do NOT add JUnit 5 assertions or MockK.
+- Anything touching the database goes through the Testcontainers Postgres of `TestDatabase.kt` via
+  `configureTestApp()` — never the dev database. `./gradlew test` therefore needs Docker running.
 - Backtick test names describing behaviour, as in `ServerTest.kt`.
 - Every new route gets one `testApplication` check asserting its status and payload.
+
+## Database
+
+- A schema change is a new `src/main/resources/db/migration/V<n>__description.sql`. Never edit a committed
+  migration: Flyway checksums them and will refuse to start.
+- Flyway runs from `configureDatabase()` at boot, against `classpath:db/migration`. No Gradle plugin, no
+  manual step — starting the app migrates it.
+- Exposed `Table` objects describe the schema for queries; the DDL lives in the SQL files. Keeping the two
+  in sync is manual.
