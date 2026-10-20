@@ -25,7 +25,6 @@ Keep every file harmonised. Order inside a class:
 - Order inside a file: imports (external → `@angular/*` → internal), then types/constants, then the decorated class. One exported Angular symbol per file.
 - Naming: `PascalCase` classes, `camelCase` members, `SCREAMING_SNAKE_CASE` module-level constants, booleans read as predicates (`isLoading`, `hasError`).
 - Mark everything not used by the template as `private`/`#private`, and `readonly` whenever it is never reassigned.
-- No comments that restate the code. Comment only the non-obvious *why*.
 - A file that exceeds ~200 lines or a method that exceeds ~20 is a split signal, not a target.
 
 ## Forms (Signal Forms)
