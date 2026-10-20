@@ -4,6 +4,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
 import io.ktor.server.application.ApplicationCall
+import io.ktor.server.auth.authenticate
 import io.ktor.server.plugins.PayloadTooLargeException
 import io.ktor.server.request.contentLength
 import io.ktor.server.request.receiveMultipart
@@ -17,17 +18,20 @@ import kotlinx.io.readByteArray
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import site.cdc.config.ValidationException
+import site.cdc.config.userId
 
 private const val MAX_UPLOAD_BYTES = 10L * 1024 * 1024
 
 fun Route.operationRoutes(service: OperationService) {
-    route("/operations") {
-        get {
-            call.respond(service.list().map { it.toResponse() })
-        }
-        post {
-            val upload = call.receiveImport()
-            call.respond(HttpStatusCode.Created, service.import(upload.csv, upload.mapping).toResponse())
+    authenticate {
+        route("/operations") {
+            get {
+                call.respond(service.list(call.userId).map { it.toResponse() })
+            }
+            post {
+                val upload = call.receiveImport()
+                call.respond(HttpStatusCode.Created, service.import(call.userId, upload.csv, upload.mapping).toResponse())
+            }
         }
     }
 }

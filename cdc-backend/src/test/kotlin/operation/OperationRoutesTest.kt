@@ -1,6 +1,7 @@
 package site.cdc.operation
 
 import io.ktor.client.HttpClient
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
@@ -24,6 +25,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import site.cdc.configureTestApp
+import site.cdc.tokenFor
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -44,8 +46,9 @@ private val MAPPING = """
 private fun statement(account: String, vararg rows: String) =
     (listOf(HEADER) + rows.map { "$account;Compte courant;$it" }).joinToString("\n")
 
-private suspend fun HttpClient.import(csv: String?, mapping: String? = MAPPING): HttpResponse =
+private suspend fun HttpClient.import(csv: String?, mapping: String? = MAPPING, user: String = "alice"): HttpResponse =
     post("/operations") {
+        bearerAuth(tokenFor(user))
         setBody(
             MultiPartFormDataContent(
                 formData {
@@ -64,6 +67,9 @@ private suspend fun HttpClient.import(csv: String?, mapping: String? = MAPPING):
             ),
         )
     }
+
+private suspend fun HttpClient.listOperations(user: String = "alice"): List<OperationResponse> =
+    Json.decodeFromString(get("/operations") { bearerAuth(tokenFor(user)) }.bodyAsText())
 
 private suspend fun labelsOf(account: String) = withContext(Dispatchers.IO) {
     suspendTransaction {
@@ -121,7 +127,7 @@ class OperationRoutesTest {
             statement("FR007", "05/01/2026;06/01/2026;CAFE;Restaurant;-3,50;908,90", "06/01/2026;07/01/2026;LOYER;;-700,00;208,90"),
         )
 
-        val response = client.get("/operations")
+        val response = client.get("/operations") { bearerAuth(tokenFor("alice")) }
 
         assertEquals(HttpStatusCode.OK, response.status)
         val operations = Json.decodeFromString<List<OperationResponse>>(response.bodyAsText()).filter { it.accountId == "FR007" }
@@ -172,6 +178,7 @@ class OperationRoutesTest {
             ).toByteArray()
 
         val response = client.post("/operations") {
+            bearerAuth(tokenFor("alice"))
             setBody(object : OutgoingContent.WriteChannelContent() {
                 override val contentType = ContentType.MultiPart.FormData.withParameter("boundary", "b")
                 override suspend fun writeTo(channel: ByteWriteChannel) = channel.writeFully(body)
@@ -179,5 +186,41 @@ class OperationRoutesTest {
         }
 
         assertEquals(HttpStatusCode.PayloadTooLarge, response.status)
+    }
+
+    @Test
+    fun `rejects a request without token`() = testApplication {
+        configureTestApp()
+
+        assertEquals(HttpStatusCode.Unauthorized, client.get("/operations").status)
+    }
+
+    @Test
+    fun `rejects a token issued for another firebase project`() = testApplication {
+        configureTestApp()
+
+        val response = client.get("/operations") { bearerAuth(tokenFor("alice", project = "other-project")) }
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
+    fun `lists only the operations of the caller`() = testApplication {
+        configureTestApp()
+
+        client.import(statement("FR008", "05/01/2026;06/01/2026;CAFE;Restaurant;-3,50;908,90"), user = "alice")
+
+        assertTrue(client.listOperations(user = "bob").none { it.accountId == "FR008" })
+    }
+
+    @Test
+    fun `import leaves another user's account with the same id untouched`() = testApplication {
+        configureTestApp()
+
+        client.import(statement("FR009", "05/01/2026;06/01/2026;CAFE;Restaurant;-3,50;908,90"), user = "alice")
+        val response = client.import(statement("FR009", "05/01/2026;06/01/2026;ESSENCE;Transport;-60,00;140,00"), user = "bob")
+
+        assertEquals("""{"deleted":0,"inserted":1}""", response.bodyAsText())
+        assertEquals(listOf("CAFE"), client.listOperations(user = "alice").filter { it.accountId == "FR009" }.map { it.label })
     }
 }

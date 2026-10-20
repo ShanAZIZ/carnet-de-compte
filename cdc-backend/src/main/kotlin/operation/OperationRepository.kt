@@ -5,6 +5,8 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.javatime.date
 import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
@@ -15,6 +17,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 
 object Operations : Table("operation") {
     val id = long("id").autoIncrement()
+    val userId = text("user_id")
     val operationDate = date("operation_date")
     val debitDate = date("debit_date")
     val label = text("label")
@@ -30,17 +33,21 @@ object Operations : Table("operation") {
 class OperationRepository {
 
     // ponytail: tout le relevé d'un coup — pagination quand un compte dépassera quelques milliers de lignes.
-    suspend fun findAll(): List<Operation> = query {
+    suspend fun findAll(userId: String): List<Operation> = query {
         Operations.selectAll()
+            .where { Operations.userId eq userId }
             .orderBy(Operations.operationDate to SortOrder.DESC, Operations.label to SortOrder.ASC)
             .map { it.toOperation() }
     }
 
-    suspend fun replaceForAccounts(operations: List<NewOperation>): Int = query {
+    suspend fun replaceForAccounts(userId: String, operations: List<NewOperation>): Int = query {
         // ponytail: verrou de table, imports sérialisés tous comptes confondus — pg_advisory_xact_lock par compte si ça bloque.
         exec("LOCK TABLE operation IN SHARE ROW EXCLUSIVE MODE")
-        val deleted = Operations.deleteWhere { accountId inList operations.map { it.accountId }.distinct() }
+        val deleted = Operations.deleteWhere {
+            (Operations.userId eq userId) and (accountId inList operations.map { it.accountId }.distinct())
+        }
         Operations.batchInsert(operations, shouldReturnGeneratedValues = false) {
+            this[Operations.userId] = userId
             this[Operations.operationDate] = it.operationDate
             this[Operations.debitDate] = it.debitDate
             this[Operations.label] = it.label
