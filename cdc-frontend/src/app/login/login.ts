@@ -17,56 +17,7 @@ const credentialsSchema = schema<Credentials>((path) => {
 @Component({
   imports: [FormField],
   selector: 'app-login',
-  template: `
-    <div class="card bg-base-100 border-base-300 mx-auto max-w-sm border">
-      <form class="card-body" novalidate (submit)="signIn($event)">
-        <h1 class="card-title text-2xl">Connexion</h1>
-
-        <label class="label" for="login-email">Email</label>
-        <input
-          id="login-email"
-          class="input w-full"
-          type="email"
-          autocomplete="username"
-          [formField]="loginForm.email"
-        />
-
-        <label class="label" for="login-password">Mot de passe</label>
-        <input
-          id="login-password"
-          class="input w-full"
-          type="password"
-          autocomplete="current-password"
-          [formField]="loginForm.password"
-        />
-
-        @if (error(); as message) {
-          <p role="alert" class="text-error">{{ message }}</p>
-        }
-        @if (isResetSent()) {
-          <p role="status" class="text-success">
-            Si ce compte existe, un email de réinitialisation vient d'être envoyé.
-          </p>
-        }
-
-        <button
-          type="submit"
-          class="btn btn-primary mt-2"
-          [disabled]="loginForm().invalid() || loginForm().submitting()"
-        >
-          Se connecter
-        </button>
-        <button
-          type="button"
-          class="btn btn-link"
-          [disabled]="loginForm.email().invalid()"
-          (click)="sendPasswordReset()"
-        >
-          Mot de passe oublié
-        </button>
-      </form>
-    </div>
-  `,
+  templateUrl: './login.html',
 })
 export class Login {
   readonly #auth = inject(Auth);
@@ -74,7 +25,6 @@ export class Login {
   protected readonly credentials = signal<Credentials>({ email: '', password: '' });
   protected readonly loginForm = form(this.credentials, credentialsSchema);
   protected readonly error = signal<string | null>(null);
-  protected readonly isResetSent = signal(false);
 
   protected async signIn(event: Event): Promise<void> {
     event.preventDefault();
@@ -82,16 +32,11 @@ export class Login {
       const { email, password } = field().value();
       try {
         await this.#auth.signIn(email, password);
-        await this.#router.navigateByUrl('/');
+        await this.#router.navigateByUrl('/', { replaceUrl: true });
       } catch {
         this.error.set('Email ou mot de passe incorrect.');
       }
       return undefined;
     });
-  }
-
-  protected async sendPasswordReset(): Promise<void> {
-    await this.#auth.sendPasswordReset(this.loginForm.email().value());
-    this.isResetSent.set(true);
   }
 }

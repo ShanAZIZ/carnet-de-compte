@@ -1,0 +1,37 @@
+<main class="flex min-h-screen items-center justify-center p-6">
+  <div class="card bg-base-100 border-base-300 w-full max-w-sm border">
+    <form class="card-body" novalidate (submit)="signIn($event)">
+      <h1 class="card-title text-2xl">Connexion</h1>
+
+      <label class="label" for="login-email">Email</label>
+      <input
+        id="login-email"
+        class="input w-full"
+        type="email"
+        autocomplete="username"
+        [formField]="loginForm.email"
+      />
+
+      <label class="label" for="login-password">Mot de passe</label>
+      <input
+        id="login-password"
+        class="input w-full"
+        type="password"
+        autocomplete="current-password"
+        [formField]="loginForm.password"
+      />
+
+      @if (error(); as message) {
+        <p role="alert" class="text-error">{{ message }}</p>
+      }
+
+      <button
+        type="submit"
+        class="btn btn-primary mt-2"
+        [disabled]="loginForm().invalid() || loginForm().submitting()"
+      >
+        Se connecter
+      </button>
+    </form>
+  </div>
+</main>

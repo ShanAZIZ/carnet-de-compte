@@ -3,7 +3,6 @@ import { initializeApp } from 'firebase/app';
 import {
   getAuth,
   onAuthStateChanged,
-  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
   User,
@@ -35,9 +34,5 @@ export class Auth {
 
   signOut(): Promise<void> {
     return signOut(this.#auth);
-  }
-
-  sendPasswordReset(email: string): Promise<void> {
-    return sendPasswordResetEmail(this.#auth, email);
   }
 }

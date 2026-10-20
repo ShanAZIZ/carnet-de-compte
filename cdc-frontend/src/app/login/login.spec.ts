@@ -30,7 +30,7 @@ describe('Login', () => {
     submitButton().click();
     await fixture.whenStable();
 
-    expect(navigate).toHaveBeenCalledWith('/');
+    expect(navigate).toHaveBeenCalledWith('/', { replaceUrl: true });
   });
 
   it('shows an error when the credentials are rejected', async () => {
