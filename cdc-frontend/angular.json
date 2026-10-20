@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "carnet-de-compte": {
+    "cdc-frontend": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -55,10 +55,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "carnet-de-compte:build:production"
+              "buildTarget": "cdc-frontend:build:production"
             },
             "development": {
-              "buildTarget": "carnet-de-compte:build:development"
+              "buildTarget": "cdc-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"

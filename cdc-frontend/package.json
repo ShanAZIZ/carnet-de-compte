@@ -1,5 +1,5 @@
 {
-  "name": "carnet-de-compte",
+  "name": "cdc-frontend",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
